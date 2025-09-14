@@ -21,6 +21,20 @@ export default function ProjectsPage() {
       duration: "00:12:44",
     },
   ];
+import ProjectCard from "@/components/ProjectCard";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
+
+const MOCK_IDS = ["1", "2", "3", "4", "5", "6"];
+
+export default async function ProjectsIndexPage() {
+  const count = MOCK_IDS.length;
 
   return (
     <div className="p-8 text-white">
