@@ -1,79 +1,95 @@
-"use client";
-import Link from "next/link";
-import Image from "next/image";
-import { Item, LiftHover, Shimmer, Stagger } from "../components/anim";
-import { useEffect, useState } from "react";
+import ProjectCard from "@/components/ProjectCard";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
 
-type Project = {
-  id: string;
-  title: string;
-  status: "draft" | "processing" | "ready";
-  duration: string;
-};
+const MOCK_IDS = ["1", "2", "3", "4", "5", "6"];
 
-const MOCK: Project[] = [
-  {
-    id: "1",
-    title: "Podcast Ep. 12",
-    status: "processing",
-    duration: "01:20:33",
-  },
-  { id: "2", title: "Livestream AMA", status: "draft", duration: "00:48:05" },
-  {
-    id: "3",
-    title: "Tutorial – React Hooks",
-    status: "ready",
-    duration: "00:32:11",
-  },
-];
-
-export default function ProjectsPage() {
-  const [loading, setLoading] = useState(true);
-  const [rows, setRows] = useState<Project[]>([]);
-
-  useEffect(() => {
-    const t = setTimeout(() => {
-      setRows(MOCK);
-      setLoading(false);
-    }, 700);
-    return () => clearTimeout(t);
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Shimmer key={i} className="h-32" />
-        ))}
-      </div>
-    );
-  }
+export default async function ProjectsIndexPage() {
+  const count = MOCK_IDS.length;
 
   return (
-    <Stagger>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {rows.map((p) => (
-          <Item key={p.id}>
-            <LiftHover>
-              <Link
-                href={`/projects/${p.id}`}
-                className="block rounded-2xl border border-white/10 bg-white/5 p-4 hover:border-white/20"
+    <div className="min-h-screen bg-[#0B0F1A] text-white px-6 py-6">
+      {/* Header */}
+      <header className="mb-4">
+        <h1 className="text-2xl font-bold tracking-[-0.01em]">Projects</h1>
+        <p className="text-sm text-gray-400">
+          Search and filter your projects (placeholders).
+        </p>
+      </header>
+
+      {/* Slim divider for structure */}
+      <div className="h-px w-full bg-gray-900 mb-6" />
+
+      {/* Filters row */}
+      <section aria-label="Filters" className="mb-6">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <Input
+            placeholder="Search projects…"
+            className="w-full md:max-w-sm bg-[#0F172A] border-gray-800 text-white placeholder:text-gray-500 focus-visible:ring-0 focus-visible:border-[#2A6CF6]"
+          />
+          <div className="flex items-center gap-3">
+            <label htmlFor="status" className="text-sm text-gray-400">
+              Status
+            </label>
+            <Select defaultValue="all">
+              <SelectTrigger
+                id="status"
+                className="w-40 bg-[#0F172A] border-gray-800 text-white focus:ring-0"
               >
-                <div className="flex items-center justify-between">
-                  <div className="font-medium">{p.title}</div>
-                  <span className="rounded-full border border-white/10 px-2 py-0.5 text-xs capitalize opacity-90">
-                    {p.status}
-                  </span>
-                </div>
-                <div className="mt-2 text-xs text-zinc-400">
-                  Duration: {p.duration}
-                </div>
-                <div className="mt-3 h-24 rounded-lg bg-white/5" />
-              </Link>
-            </LiftHover>
-          </Item>
-        ))}
-      </div>
-    </Stagger>
+                <SelectValue placeholder="Filter" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#0F172A] border-gray-800">
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="ready">Ready</SelectItem>
+                <SelectItem value="posted">Posted</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Results meta */}
+        <div className="mt-2 text-xs text-gray-500" aria-live="polite">
+          {count === 0
+            ? "No results"
+            : `${count} result${count > 1 ? "s" : ""}`}
+        </div>
+      </section>
+
+      {/* Grid / Empty state */}
+      <section
+        aria-label="Projects grid"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+      >
+        {MOCK_IDS.length === 0 ? (
+          <div className="col-span-full rounded-xl border border-dashed border-gray-800 bg-[#0F172A] p-10 text-center">
+            <div className="mx-auto mb-3 grid h-10 w-10 place-items-center rounded-full bg-gray-900 text-gray-400">
+              📁
+            </div>
+            <h2 className="text-sm font-medium text-gray-200">
+              No projects yet
+            </h2>
+            <p className="mt-1 text-xs text-gray-400">
+              Upload a video from the Dashboard to create your first project.
+            </p>
+          </div>
+        ) : (
+          MOCK_IDS.map((id, i) => (
+            <ProjectCard
+              key={id}
+              id={id}
+              title={`Project ${id}`}
+              status={i % 3 === 0 ? "Posted" : i % 3 === 1 ? "Ready" : "Draft"}
+            />
+          ))
+        )}
+      </section>
+    </div>
   );
 }
