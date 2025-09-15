@@ -1,37 +1,89 @@
 "use client";
-import { FadeIn, LiftHover } from "../components/anim";
+
 import { useState } from "react";
-import { Upload } from "lucide-react";
+import { toast } from "react-toastify";
 
 export default function UploadPage() {
-  const [hover, setHover] = useState(false);
+  const [url, setUrl] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+
+  const handleProcess = async () => {
+    try {
+      const res = await fetch("/api/uploads/complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId: url }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw data;
+
+      toast.success("Processing started!");
+    } catch (err: any) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error(JSON.stringify(err));
+      }
+    }
+  };
+
+  const handleFileUpload = async () => {
+    if (!file) return toast.error("No file selected");
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/uploads/complete", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw data;
+
+      toast.success("File uploaded successfully!");
+    } catch (err: any) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error(JSON.stringify(err));
+      }
+    }
+  };
 
   return (
-    <FadeIn>
-      <div
-        onDragOver={(e) => {
-          e.preventDefault();
-          setHover(true);
-        }}
-        onDragLeave={() => setHover(false)}
-        className="rounded-2xl border border-dashed border-white/15 p-10 text-center"
+    <div className="p-6 text-white">
+      <h1 className="text-2xl font-bold mb-4">Upload</h1>
+
+      <input
+        type="text"
+        value={url}
+        onChange={(e) => setUrl(e.target.value)}
+        placeholder="Enter YouTube URL"
+        className="w-full p-2 rounded bg-gray-800 mb-2"
+      />
+      <button
+        onClick={handleProcess}
+        className="bg-blue-600 px-4 py-2 rounded text-white mb-4"
       >
-        <LiftHover>
-          <div
-            className={`mx-auto grid max-w-xl place-items-center gap-3 rounded-xl p-8 ${
-              hover ? "ring-2 ring-purple-500/50 bg-purple-500/5" : "bg-white/5"
-            }`}
-          >
-            <Upload className="h-7 w-7 opacity-80" />
-            <div className="text-sm text-zinc-300">
-              Drag & drop a long-form video here
-            </div>
-            <div className="text-xs text-zinc-400">
-              MP4 / MOV up to 2GB • We’ll transcode to 1080×1920
-            </div>
-          </div>
-        </LiftHover>
+        Start Processing
+      </button>
+
+      <div>
+        <input
+          type="file"
+          onChange={(e) => setFile(e.target.files?.[0] || null)}
+          className="mb-2"
+        />
+        <button
+          onClick={handleFileUpload}
+          className="bg-green-600 px-4 py-2 rounded text-white"
+        >
+          Upload File
+        </button>
       </div>
-    </FadeIn>
+    </div>
   );
 }

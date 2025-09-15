@@ -1,28 +1,29 @@
-// src/app/layout.tsx
 import "./globals.css";
-import type { Metadata } from "next";
-import Sidebar from "../components/Sidebar";
+import type { ReactNode } from "react";
 
-export const metadata: Metadata = {
-  title: "Cliply",
-  description: "Cliply MVP",
-};
+import Sidebar from "@/components/Sidebar";
+import Topbar from "@/components/Topbar";
+import { Toaster } from "@/components/ui/toaster";
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-[#0B0F1A] text-white">
-        <div className="flex">
-          {/* Sidebar fixed on the left */}
-          <Sidebar />
+      <body className="min-h-screen bg-slate-950 text-slate-100 antialiased">
+        <div className="flex min-h-screen">
+          {/* Left column: sidebar */}
+          <aside className="w-64 shrink-0 border-r border-slate-800 bg-slate-900">
+            <Sidebar />
+          </aside>
 
-          {/* Page content */}
-          <main className="flex-1 p-8">{children}</main>
+          {/* Right column: topbar + page */}
+          <div className="flex-1 flex flex-col">
+            <Topbar title="Home" />
+            <main className="flex-1">{children}</main>
+          </div>
         </div>
+
+        {/* toast provider */}
+        <Toaster />
       </body>
     </html>
   );
