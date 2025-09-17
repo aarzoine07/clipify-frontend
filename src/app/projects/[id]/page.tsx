@@ -1,70 +1,75 @@
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { notFound } from "next/navigation";
+import supabase from "@/lib/supabase/server";
 
-type PageProps = { params: { id: string } };
+type Props = {
+  params: { id: string };
+};
 
-export default async function ProjectDetailPage({ params }: PageProps) {
+export default async function ProjectPage({ params }: Props) {
   const { id } = params;
 
+  const { data: project, error } = await supabase
+    .from("projects")
+    .select("id, title, status, created_at, options, clip_count")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+  if (!project) {
+    notFound();
+  }
+
   return (
-    <div className="min-h-screen bg-[#0B0F1A] text-white px-6 py-6">
-      {/* Header */}
-      <header className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Project {id}</h1>
-          <p className="text-sm text-gray-400">
-            Project detail stub (placeholders).
+    <div className="min-h-screen bg-[#0B0F1A] text-white">
+      <div className="mx-auto max-w-5xl px-6 py-8">
+        <div className="mb-6">
+          <h1 className="text-2xl font-semibold">
+            {project.title ?? "Untitled Project"}
+          </h1>
+          <p className="text-xs text-gray-400">
+            Created {new Date(project.created_at as string).toLocaleString()}
           </p>
         </div>
-        <div className="flex gap-2">
-          <button className="px-3 py-1.5 text-sm rounded-lg bg-[#2A6CF6] hover:bg-[#1E5BB8]">
-            Edit
-          </button>
-          <button className="px-3 py-1.5 text-sm rounded-lg bg-gray-800 hover:bg-gray-700 border border-gray-700">
-            Duplicate
-          </button>
-          <button className="px-3 py-1.5 text-sm rounded-lg bg-gray-800 hover:bg-gray-700 border border-gray-700">
-            Add to Compilation
-          </button>
+
+        <div className="mb-6 flex items-center gap-3">
+          <span
+            className={`rounded-full px-3 py-1 text-xs ${
+              project.status === "ready"
+                ? "bg-green-600/20 text-green-400"
+                : "bg-yellow-600/20 text-yellow-400"
+            }`}
+          >
+            {project.status}
+          </span>
+          <span className="text-xs text-gray-400">
+            {(project as any).clip_count ?? 0} clips
+          </span>
         </div>
-      </header>
 
-      {/* Tabs (UI only) */}
-      <Tabs defaultValue="transcript" className="w-full">
-        <TabsList className="bg-[#0F172A] border border-gray-800">
-          <TabsTrigger value="transcript">Transcript</TabsTrigger>
-          <TabsTrigger value="clips">Clips</TabsTrigger>
-          <TabsTrigger value="timeline">Timeline</TabsTrigger>
-        </TabsList>
-
-        <div className="mt-4">
-          <TabsContent value="transcript" className="outline-none">
-            <section aria-label="Transcript" className="space-y-2">
-              <h2 className="text-base font-semibold">Transcript</h2>
-              <div className="h-48 rounded-lg border border-dashed border-gray-700 bg-[#0F172A] grid place-items-center text-gray-500">
-                (Transcript placeholder)
-              </div>
-            </section>
-          </TabsContent>
-
-          <TabsContent value="clips" className="outline-none">
-            <section aria-label="Clips" className="space-y-2">
-              <h2 className="text-base font-semibold">Clips</h2>
-              <div className="h-48 rounded-lg border border-dashed border-gray-700 bg-[#0F172A] grid place-items-center text-gray-500">
-                (Clips placeholder)
-              </div>
-            </section>
-          </TabsContent>
-
-          <TabsContent value="timeline" className="outline-none">
-            <section aria-label="Timeline" className="space-y-2">
-              <h2 className="text-base font-semibold">Timeline</h2>
-              <div className="h-48 rounded-lg border border-dashed border-gray-700 bg-[#0F172A] grid place-items-center text-gray-500">
-                (Timeline placeholder)
-              </div>
-            </section>
-          </TabsContent>
+        <div className="rounded-2xl bg-[#0F172A] p-6">
+          <h2 className="mb-3 text-lg font-medium">Options</h2>
+          <pre className="whitespace-pre-wrap break-words text-xs text-gray-300">
+            {JSON.stringify(project.options, null, 2)}
+          </pre>
         </div>
-      </Tabs>
+
+        <div className="mt-6 flex gap-3">
+          <a
+            href={`/editor/${project.id}`}
+            className="rounded-2xl bg-[#2A6CF6] px-4 py-2 text-sm font-medium hover:opacity-90"
+          >
+            Open Editor (stub)
+          </a>
+          <a
+            href="/dashboard"
+            className="rounded-2xl bg-[#111827] px-4 py-2 text-sm text-gray-200 hover:opacity-80"
+          >
+            Back to Dashboard
+          </a>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,15 +1,12 @@
-// Server-only Supabase client (uses service role)
-// Never import this from the browser.
 import { createClient } from "@supabase/supabase-js";
-import type { Database } from "@/types/supabase";
 
-export const supabaseAdmin = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+  process.env.SUPABASE_SERVICE_ROLE_KEY as string,
   {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
+    auth: { persistSession: false },
   }
 );
+
+export default supabase;
+export { supabase };
